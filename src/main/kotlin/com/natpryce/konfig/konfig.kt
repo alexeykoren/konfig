@@ -184,10 +184,10 @@ class ConfigurationProperties(
         }
         
          /**
-+         * Load from optional file
-+         */
-+        @JvmStatic
-+        fun fromOptionalFile(file: File) = if (file.exists()) fromFile(file) else EmptyConfiguration
+         * Load from optional file
+         */
+        @JvmStatic
+        fun fromOptionalFile(file: File) = if (file.exists()) fromFile(file) else EmptyConfiguration
         
         private fun load(input: InputStream?, location: Location, errorMessageFn: () -> String) =
             (input ?: throw Misconfiguration(errorMessageFn())).use {
