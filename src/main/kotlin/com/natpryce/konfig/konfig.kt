@@ -184,11 +184,20 @@ class ConfigurationProperties(
         }
         
          /**
-         * Load from optional file
+         * Load from optional file, returns EmptyConfiguration if file is not found
          */
         @JvmStatic
-        fun fromOptionalFile(file: File) = if (file.exists()) fromFile(file) else EmptyConfiguration
-        
+        fun fromFileOrEmpty(file: File) = if (file.exists()) fromFile(file) else EmptyConfiguration
+
+
+        /**
+         * Load from optional file, returns EmptyConfiguration if file is not found
+         */
+        @JvmStatic
+        fun fromFileOrNull(file: File) = if (file.exists()) fromFile(file) else null
+
+
+
         private fun load(input: InputStream?, location: Location, errorMessageFn: () -> String) =
             (input ?: throw Misconfiguration(errorMessageFn())).use {
                 ConfigurationProperties(Properties().apply { load(input) }, location)
@@ -290,6 +299,9 @@ class Override(
 }
 
 infix fun Configuration.overriding(defaults: Configuration?) = if (defaults == null) this else Override(this, defaults)
+
+infix fun Configuration.ifNot(betterConf: Configuration?) = betterConf ?: this
+
 
 fun search(first: Configuration, vararg rest: Configuration) = rest.fold(first, ::Override)
 

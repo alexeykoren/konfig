@@ -8,6 +8,7 @@ import org.junit.Test
 import java.io.File
 import java.util.*
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 
@@ -153,9 +154,23 @@ class OverridingAndFallingBack {
 
     val config = overrides overriding defaults
 
+    val sosoConfig = defaults ifNot null
+    val bestConfig = defaults ifNot overrides
+
     val x = Key("x", stringType)
     val y = Key("y", stringType)
     val z = Key("z", stringType)
+
+    @Test
+    fun overrides_properties_if_not() {
+        assertThat(sosoConfig[x], equalTo("x"))
+        assertThat(sosoConfig[y], equalTo("y"))
+
+        assertThat(bestConfig[x], equalTo("XX"))
+        assertFalse(bestConfig.contains(y))
+        assertThat(bestConfig[z], equalTo("ZZ"))
+    }
+
 
     @Test
     fun overrides_default_properties() {
@@ -298,6 +313,14 @@ class FromResources {
         assertThat(config[a], equalTo(1))
         assertThat(config[b], equalTo("two"))
     }
+}
+
+
+class FromFile {
+
+    val a = Key("a", intType)
+    val b = Key("b", stringType)
+
 
     @Test
     fun can_load_from_file() {
@@ -306,10 +329,10 @@ class FromResources {
         assertThat(config[a], equalTo(1))
         assertThat(config[b], equalTo("two"))
     }
-    
+
     @Test
     fun can_load_from_optional_file() {
-        val config = ConfigurationProperties.fromOptionalFile(File("src/test/resources/com/natpryce/konfig/example.properties"))
+        val config = ConfigurationProperties.fromFileOrEmpty(File("src/test/resources/com/natpryce/konfig/example.properties"))
 
         assertThat(config[a], equalTo(1))
         assertThat(config[b], equalTo("two"))
@@ -317,8 +340,24 @@ class FromResources {
 
     @Test
     fun should_return_empty_config_when_load_from_optional_file_thats_not_present() {
-        val config = ConfigurationProperties.fromOptionalFile(File("not.available.file"))
+        val config = ConfigurationProperties.fromFileOrEmpty(File("not.available.file"))
 
         assertThat(config, equalTo<Configuration>(EmptyConfiguration))
-    }    
+    }
+
+
+    @Test
+    fun can_load_from_optional_file_2() {
+        val config = ConfigurationProperties.fromFileOrNull(File("src/test/resources/com/natpryce/konfig/example.properties")) ?: throw NullPointerException("Config should be loaded")
+
+        assertThat(config[a], equalTo(1))
+        assertThat(config[b], equalTo("two"))
+    }
+
+    @Test
+    fun should_return_null_when_load_from_optional_file_thats_not_present() {
+        val config = ConfigurationProperties.fromFileOrNull(File("not.available.file"))
+
+        assertNull(config)
+    }
 }
