@@ -43,6 +43,15 @@ class FromProperties {
     }
 
     @Test
+    fun containsAny() {
+        assertTrue(config.containsAny(listOf(x)))
+        assertTrue(config.containsAny(listOf(y, x)))
+        assertTrue(config.containsAny(listOf(Key("bob", stringType), y)))
+        assertFalse(config.containsAny(listOf(Key("bob", stringType))))
+    }
+
+
+    @Test
     fun reports_entire_contents() {
         val expectedPropertiesAsMap = mapOf(
                 "name" to "alice",
@@ -78,6 +87,14 @@ class FromMap {
         assertTrue(config.contains(x))
         assertTrue(config.contains(y))
         assertFalse(config.contains(Key("bob", stringType)))
+    }
+
+    @Test
+    fun containsAny() {
+        assertTrue(config.containsAny(listOf(x)))
+        assertTrue(config.containsAny(listOf(y, x)))
+        assertTrue(config.containsAny(listOf(Key("bob", stringType), y)))
+        assertFalse(config.containsAny(listOf(Key("bob", stringType))))
     }
 
     @Test
@@ -145,6 +162,19 @@ class FromEnvironment {
         assertThat(config.list(), equalTo(listOf(config.location to env)))
     }
 
+    @Test
+    fun containsAny() {
+        val env = mapOf("X" to "1", "Y" to "2")
+        val config = EnvironmentVariables(lookup = { env[it] })
+
+        val x = Key("X", intType)
+        val y = Key("Y", intType)
+
+        assertTrue(config.containsAny(listOf(x)))
+        assertTrue(config.containsAny(listOf(y, x)))
+        assertTrue(config.containsAny(listOf(Key("bob", stringType), y)))
+        assertFalse(config.containsAny(listOf(Key("bob", stringType))))
+    }
 
 }
 
@@ -154,12 +184,13 @@ class OverridingAndFallingBack {
 
     val config = overrides overriding defaults
 
-    val sosoConfig = defaults ifNot null
-    val bestConfig = defaults ifNot overrides
-
     val x = Key("x", stringType)
     val y = Key("y", stringType)
     val z = Key("z", stringType)
+
+    val sosoConfig = defaults.ifNot(null, listOf(x, y, z))
+    val bestConfig = defaults.ifNot(overrides, listOf(x, y, z))
+
 
     @Test
     fun overrides_properties_if_not() {
@@ -185,6 +216,15 @@ class OverridingAndFallingBack {
         assertTrue(config.contains(y))
         assertTrue(config.contains(z))
         assertFalse(config.contains(Key("bob", stringType)))
+    }
+
+    @Test
+    fun containsAny() {
+        assertTrue(config.containsAny(listOf(x)))
+        assertTrue(config.containsAny(listOf(z)))
+        assertTrue(config.containsAny(listOf(y, x)))
+        assertTrue(config.containsAny(listOf(Key("bob", stringType), y)))
+        assertFalse(config.containsAny(listOf(Key("bob", stringType))))
     }
 
     @Test
@@ -237,6 +277,13 @@ class SearchConfigurationList {
         assertTrue(config.contains(c))
         assertFalse(config.contains(Key("bob", stringType)))
     }
+
+    @Test
+    fun containsAny() {
+        assertTrue(config.containsAny(listOf(a)))
+        assertTrue(config.containsAny(listOf(b, c)))
+        assertFalse(config.containsAny(listOf(Key("bob", stringType))))
+    }
 }
 
 internal inline fun <reified T : Exception> expectThrown(block: () -> Unit): T =
@@ -286,6 +333,22 @@ class ConfigSubset {
 
         assertFalse(subsetA.contains(key3))
         assertTrue(subsetB.contains(key3))
+    }
+
+    @Test
+    fun containsAny() {
+        assertTrue(fullSet.containsAny(listOf(Key("a.one", stringType))))
+        assertTrue(fullSet.containsAny(listOf(Key("b.one", stringType))))
+        assertTrue(fullSet.containsAny(listOf(Key("a.one", stringType), Key("b.one", stringType))))
+
+        assertTrue(subsetA.containsAny(listOf(key1)))
+        assertTrue(subsetB.containsAny(listOf(key2)))
+
+        assertFalse(subsetA.containsAny(listOf(key3)))
+        assertTrue(subsetB.containsAny(listOf(key3)))
+
+        assertTrue(subsetA.containsAny(listOf(key1, key3)))
+        assertTrue(subsetB.containsAny(listOf(key2, key3)))
     }
 
     @Test

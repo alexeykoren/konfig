@@ -52,6 +52,10 @@ private class CommandLineConfiguration(allOptions: List<CommandLineOption>,
         return result
     }
 
+    override fun containsAny(keys: Iterable<Key<*>>): Boolean {
+        return optionsUsed.keys.firstOrNull { keys.contains(it) } != null
+    }
+
     override fun list(): List<Pair<Location, Map<String, String>>> {
         return listOf(location to optionsUsed.values.associateBy({ it.flagUsed }, { it.value }))
     }

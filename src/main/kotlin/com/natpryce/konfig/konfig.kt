@@ -99,7 +99,11 @@ interface Configuration {
     fun searchPath(key: Key<*>): List<PropertyLocation>
     
     fun list(): List<Pair<Location, Map<String, String>>>
-    
+
+    fun containsAny(keys: Iterable<Key<*>>): Boolean {
+        return keys.any { contains(it) }
+    }
+
 }
 
 /**
@@ -245,6 +249,7 @@ object EmptyConfiguration : Configuration {
     override fun <T> getOrElse(key: Key<T>, default: (Key<T>) -> T) = default(key)
     override fun <T> getOrNull(key: Key<T>) = null
     override fun contains(key: Key<*>) = false
+    override fun containsAny(keys: Iterable<Key<*>>) = false
     override fun list() = emptyList<Pair<Location, Map<String, String>>>()
     override fun searchPath(key: Key<*>) = emptyList<PropertyLocation>()
 }
@@ -270,7 +275,7 @@ class EnvironmentVariables(
         val envvar = toEnvironmentVariable(name)
         PropertyLocation(key, location, envvar) to lookup(envvar)
     }
-    
+
     override fun searchPath(key: Key<*>) =
         listOf(PropertyLocation(key, location, toEnvironmentVariable(key.name)))
     
@@ -301,6 +306,8 @@ class Override(
 infix fun Configuration.overriding(defaults: Configuration?) = if (defaults == null) this else Override(this, defaults)
 
 infix fun Configuration.ifNot(betterConf: Configuration?) = betterConf ?: this
+
+fun Configuration.ifNot(betterConf: Configuration?, properties: Iterable<Key<*>>) = if(betterConf == null || !betterConf.containsAny(properties)) this else betterConf
 
 
 fun search(first: Configuration, vararg rest: Configuration) = rest.fold(first, ::Override)
