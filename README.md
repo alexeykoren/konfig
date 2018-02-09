@@ -1,9 +1,5 @@
 # Konfig - A Type Safe Configuration API for Kotlin
 
-[![Kotlin](https://img.shields.io/badge/kotlin-1.0.0-blue.svg)](http://kotlinlang.org)
-[![Build Status](https://travis-ci.org/npryce/konfig.svg?branch=master)](https://travis-ci.org/npryce/konfig)
-[![Maven Central](https://img.shields.io/maven-central/v/com.natpryce/konfig.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.natpryce%22%20AND%20a%3A%22konfig%22)
-
 Konfig provides an extensible, type-safe API for configuration
 properties gathered from multiple sources — built in resources, system
 properties, property files, environment variables, command-line
@@ -28,7 +24,11 @@ running application.
 Getting Started
 ---------------
 
-To get started, add `com.natpryce:konfig:<version>` as a dependency, import `com.natpryce.konfig.*` and then:
+To get started:
+ - add `maven { url 'https://jitpack.io' }` to `repositories{}`
+ - add `com.github.alexeykoren:konfig:<version>` as a compile dependency, 
+ - import `com.natpryce.konfig.*` 
+ and then:
 
 1. Define typed property keys
 
@@ -62,6 +62,8 @@ To get started, add `com.natpryce:konfig:<version>` as a dependency, import `com
     server.start()
     ```
 
+5. Sometimes `overriding` is not consistent cause it mixes property declarations from different sources. In case you need consistent config from one and only one source but you want to select best one - have a look at `ifNot` method.
+
 
 
 Konfig can load properties from:
@@ -71,7 +73,9 @@ Konfig can load properties from:
 * Environment variables
 * Hard-coded maps (with convenient syntax)
 * Command-line parameters (with long and short option syntax)
+* TestConfigurationHolder (which is basically <String, Configuration> map but can be extended for on-the-fly config generation or whatever else)
 
 Konfig can easily be extended with new property types and sources of configuration data.
 
 Konfig can report where configuration properties are searched for and where they were found.
+
